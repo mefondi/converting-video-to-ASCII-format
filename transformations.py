@@ -1,22 +1,20 @@
-import os
 import sys
-
+import numpy as np
 import tkinter as tk
 
 from PIL import Image
-from imageio import imwrite
+from colorama import Cursor
 from tkinter import filedialog
 from moviepy.editor import VideoFileClip
 
-
-def resize(image:Image):
-    maxWidth = 300
-    width, height = image.size
+def resize(video):
+    maxWidth = 450
+    width, height = video.size
     width_offset = 3 
     newHight = height / width_offset * maxWidth / width
     if(width > maxWidth or height > newHight):
-        image = image.resize((maxWidth, int(newHight)))
-    return image
+        video = video.resize((maxWidth, int(newHight)))
+    return video
 
 def ToGrayscale(image:Image):
     ASCIIstring = "  ,-':<>;+!*/?%&98#"
@@ -32,14 +30,14 @@ def ToGrayscale(image:Image):
         sys.stdout.flush()
     
 def ToClip(video:str):
-    output_folder = 'extracted_frames'
-    os.makedirs(output_folder,  exist_ok=True)
     clip = VideoFileClip(video)
-
-    for i, frame in enumerate(clip.iter_frames(fps=clip.fps, dtype='uint8')):
-        frame_filename = os.path.join(output_folder, f'{i}.jpg')
-        imwrite(frame_filename, frame)
-
+    clip = resize(clip)
+    p = 0
+    for frame in enumerate(clip.iter_frames(fps=clip.fps, dtype='uint8')):
+        with Image.fromarray(np.array(frame[1])) as im:
+            ToGrayscale(im)
+            sys.stdout.write(Cursor.POS(0, 0))
+             
 def select_file():
     root = tk.Tk()
     root.withdraw()
